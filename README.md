@@ -441,23 +441,77 @@ This section provides instructions for deploying the application to Heroku, a po
 
 11. **Set up scheduled content syncing**
 
-    To schedule regular content updates, use the Heroku Scheduler add-on:
+    To automate content syncing and social media posting, you'll use the Heroku Scheduler add-on:
 
     ```bash
+    # Install the Heroku Scheduler add-on
     heroku addons:create scheduler:standard
     ```
 
-    Then open the scheduler dashboard:
+    Then open the scheduler dashboard to configure your scheduled tasks:
 
     ```bash
     heroku addons:open scheduler
     ```
 
-    Add the following jobs:
+    ### Configuring Scheduled Tasks
 
-    - For podcast syncing: `FLASK_APP=app.py flask sync-podcast "YOUR_PODCAST_RSS_URL"`
-    - For blog syncing: `FLASK_APP=app.py flask sync-blog "YOUR_BLOG_RSS_URL"`
-    - For YouTube syncing: `FLASK_APP=app.py flask sync-youtube "YOUR_YOUTUBE_CHANNEL_ID"`
+    In the Heroku Scheduler dashboard:
+
+    1. Click on **Create Job**
+    2. Set the frequency (recommended: **Every hour** for content syncing)
+    3. Enter the command to run (see examples below)
+    4. Click **Save Job**
+    
+    Repeat this process for each type of content you want to sync.
+
+    ### Example Scheduler Commands
+
+    **Sync podcast episodes hourly:**
+    ```
+    FLASK_APP=app.py flask sync-podcast "https://feeds.simplecast.com/47yfLpm0"
+    ```
+
+    **Sync blog posts hourly:**
+    ```
+    FLASK_APP=app.py flask sync-blog "https://snyk.io/blog/feed/"
+    ```
+
+    **Sync YouTube videos hourly:**
+    ```
+    FLASK_APP=app.py flask sync-youtube "https://www.youtube.com/feeds/videos.xml?channel_id=UCh4dJzctb0NhSibjU-e2P6w"
+    ```
+
+    ### Setting Up Autonomous Social Media Posting
+
+    To enable autonomous social media posting for newly discovered content, add this scheduled job:
+
+    1. In the Scheduler dashboard, click **Create Job**
+    2. Set frequency to **Every hour** (runs 30 minutes after content syncing)
+    3. Enter this command:
+       ```
+       FLASK_APP=app.py flask auto-post --limit=3
+       ```
+       The `--limit` parameter controls the maximum number of posts to create per run
+
+    ### Best Practices for Scheduling
+
+    - **Stagger your jobs**: Schedule content syncing to run at the top of the hour and auto-posting to run 30 minutes later
+    - **Monitor usage**: Check your application logs to ensure tasks are completing successfully
+    - **Adjust frequency**: For high-volume feeds, consider more frequent syncing (every 10 minutes)
+    - **Check logs**: If a job fails, view logs with `heroku logs --ps scheduler`
+
+    ### Viewing Scheduler Logs
+
+    To check if your scheduled jobs are running properly:
+
+    ```bash
+    # View recent scheduler logs
+    heroku logs --ps scheduler
+
+    # View all application logs
+    heroku logs --tail
+    ```
 
 12. **Open your application**
 

@@ -1,0 +1,29 @@
+Create an engaging {{ platform_name }} post about this {{ content_type_name }}. 
+The TOTAL post (including the URL) MUST be {{ char_limit }} characters or less.
+
+Content Details:
+- Title: {{ title }}
+- Description: {{ description }}
+- URL: {{ url }}
+- Timing: {{ timing }}
+
+Person authoring this social post: {{ user_name }}
+Background of the person authoring this social post: {{ user_bio }}
+
+Key Requirements:
+1. STRICT LIMIT: Your text must be {{ content_limit }} characters or less to leave room for the URL
+2. Must end with: {{ url }}
+3. Use timing ("{{ timing }}") if it adds value
+4. Focus on the key insights or value proposition
+5. If the promoter's expertise relates to the topic, incorporate it naturally
+
+{% block content_type_specific_guidance %}
+{% endblock %}
+
+{% if platform == "linkedin" %}
+For LinkedIn: You can include more detail and professional insights. Focus on providing value to a professional audience.
+{% elif platform == "twitter" %}
+For Twitter: Be extremely concise and engaging. Make every character count.
+{% endif %}
+
+Remember: The URL counts toward the {{ char_limit }} character limit! Keep your content appropriate for the platform. 

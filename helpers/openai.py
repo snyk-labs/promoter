@@ -92,6 +92,8 @@ def generate_social_post(content_item, user, platform=SocialPlatform.GENERIC, ma
     Raises:
         Exception: If post generation fails after max_retries
     """
+    # Import here to avoid circular imports
+    from helpers.prompt_templates import render_system_prompt, render_user_prompt
     
     # Get the OpenAI client
     client = get_openai_client()
@@ -102,26 +104,16 @@ def generate_social_post(content_item, user, platform=SocialPlatform.GENERIC, ma
     # Detect content type
     content_type = detect_content_type(content_item)
     
-    # Calculate how long ago the content was published
-    now = datetime.utcnow()
-    time_diff = now - content_item.publish_date
-    days_ago = time_diff.days
-    
-    # Create a human-readable time description
-    if days_ago == 0:
-        time_context = "just released today"
-    elif days_ago == 1:
-        time_context = "released yesterday"
-    elif days_ago < 7:
-        time_context = f"released {days_ago} days ago"
-    elif days_ago < 14:
-        time_context = "released last week"
-    elif days_ago < 30:
-        time_context = "released a few weeks ago"
-    elif days_ago < 60:
-        time_context = "released last month"
-    else:
-        time_context = f"from {content_item.publish_date.strftime('%B %Y')}"
+    # Set content-specific variables
+    if content_type == ContentType.PODCAST:
+        content_type_name = "podcast episode"
+        url_field = content_item.player_url
+    elif content_type == ContentType.VIDEO:
+        content_type_name = "YouTube video"
+        url_field = content_item.url
+    elif content_type == ContentType.BLOG:
+        content_type_name = "blog post"
+        url_field = content_item.url
     
     # Track retries
     attempts = 0
@@ -129,167 +121,23 @@ def generate_social_post(content_item, user, platform=SocialPlatform.GENERIC, ma
     last_error = None
     last_length = 0
     
-    # Set content-specific variables
-    if content_type == ContentType.PODCAST:
-        content_type_name = "podcast episode"
-        url_field = content_item.player_url
-        content_description = f"Episode {content_item.episode_number}: {content_item.title}"
-    elif content_type == ContentType.VIDEO:
-        content_type_name = "YouTube video"
-        url_field = content_item.url
-        content_description = content_item.title
-    elif content_type == ContentType.BLOG:
-        content_type_name = "blog post"
-        url_field = content_item.url
-        content_description = content_item.title
-    
-    # Base system message with platform-specific and content-type-specific details
-    system_message = f"""You are an expert social media manager who creates engaging, professional posts about {content_type_name}s for {platform_config['name']}.
-Your goal is to maximize engagement while being informative. Focus on the value and insights that would interest security professionals and developers.
-
-CRITICAL LENGTH REQUIREMENT:
-The TOTAL post length (including the URL that will be added at the end) MUST be {platform_config['char_limit']} characters or less.
-The URL will take up approximately {URL_CHAR_APPROX} characters, so your generated text must be {platform_config['content_limit']} characters or less to leave room for the URL.
-
-Post Style: {platform_config['style']}
-"""
-
-    # Add content-type specific messaging
-    if content_type == ContentType.PODCAST:
-        system_message += """
-Podcast Promotion Style:
-- Focus on valuable insights and key points covered in the episode
-- Mention key takeaways that would make someone want to listen
-- Use an authoritative but friendly tone
-- Avoid overly salesy language, focus on educational value"""
-    elif content_type == ContentType.VIDEO:
-        system_message += """
-Video Promotion Style:
-- Be more casual and visually descriptive
-- Emphasize the visual/demo aspects of the video 
-- Use action-oriented language that creates curiosity
-- Make it sound exciting and worth watching
-- If appropriate, use emoji sparingly for visual appeal
-- Mention what viewers will learn or see demonstrated"""
-    elif content_type == ContentType.BLOG:
-        system_message += """
-Blog Post Promotion Style:
-- Focus on the educational aspects and key insights
-- Emphasize any statistics, research findings, or actionable tips
-- Use a more thoughtful, analytical tone
-- Highlight the expertise demonstrated in the article
-- For technical posts, mention technologies or techniques covered"""
-
-        # Add author guidance to system message for blog posts
-        if hasattr(content_item, 'author') and content_item.author:
-            system_message += f"""
-- The blog post was written by {content_item.author} - you may mention the author if it adds value"""
-        else:
-            system_message += """
-- DO NOT mention or refer to any blog author as this information is not available"""
-
-    system_message += f"""
-Critical requirements for every post:
-1. Keep total length under {platform_config['char_limit']} characters INCLUDING the URL
-2. Keep the tone authentic, not overly marketing-focused
-3. Focus on the key insights or value proposition
-4. Make every word count"""
-    
-    # Base user message template, adjusted for platform and content type
-    user_message_template = f"""Create an engaging {platform_config['name']} post about this {content_type_name}. 
-The TOTAL post (including the URL) MUST be {platform_config['char_limit']} characters or less.
-
-Content Details:
-- Title: {{title}}
-- Description: {{description}}
-- URL: {{url}}
-- Timing: {{timing}}
-
-Person authoring this social post: {{name}}
-Background of the person authoring this social post: {{bio}}
-
-Key Requirements:
-1. STRICT LIMIT: Your text must be {platform_config['content_limit']} characters or less to leave room for the URL
-2. Must end with: {{url}}
-3. Use timing ("{{timing}}") if it adds value
-4. Focus on the key insights or value proposition
-5. If the promoter's expertise relates to the topic, incorporate it naturally"""
-
-    # Add content-type specific guidance
-    if content_type == ContentType.PODCAST:
-        user_message_template += """
-6. NEVER mention the episode number
-7. Communicate what listeners will learn"""
-    elif content_type == ContentType.VIDEO:
-        user_message_template += """
-6. Create curiosity about what's shown in the video
-7. Use more visual and action-oriented language"""
-    elif content_type == ContentType.BLOG:
-        user_message_template += """
-6. Emphasize the educational value or key insights
-7. Highlight any unique perspectives or research findings"""
-        
-        # Add blog-specific author handling
-        if hasattr(content_item, 'author') and content_item.author:
-            user_message_template += """
-8. You can mention the blog author: "{blog_author}" if it adds value to the post"""
-        else:
-            user_message_template += """
-8. DO NOT refer to or mention any blog author since that information is not available"""
-
-    # Add platform-specific guidance only when generating for specific platforms
-    if platform == SocialPlatform.LINKEDIN:
-        user_message_template += """
-
-For LinkedIn: You can include more detail and professional insights. Focus on providing value to a professional audience."""
-    elif platform == SocialPlatform.TWITTER:
-        user_message_template += """
-
-For Twitter: Be extremely concise and engaging. Make every character count."""
-    
-    user_message_template += f"""
-
-Remember: The URL counts toward the {platform_config['char_limit']} character limit! Keep your content appropriate for the platform."""
-    
     while attempts < max_retries:
         attempts += 1
         
-        # If this is a retry, strengthen the message about length constraints
-        if attempts > 1:
-            system_message += f"""
-
-PREVIOUS ATTEMPT FAILED: The content was too long ({last_length} characters).
-YOU MUST KEEP THE CONTENT UNDER {platform_config['content_limit']} CHARACTERS EXCLUDING THE URL, which is {URL_CHAR_APPROX} characters.
-The total MUST be less than {platform_config['char_limit']} characters. Be extremely concise!"""
-        
         try:
-            description = getattr(content_item, 'description', '')
-            # For videos and blog posts that have excerpts, use that instead when available
-            if content_type in [ContentType.VIDEO, ContentType.BLOG] and hasattr(content_item, 'excerpt') and content_item.excerpt:
-                description = content_item.excerpt
-                
-            # If description is too long, truncate it
-            if len(description) > 400:
-                description = description[:397] + "..."
-                
-            # Prepare user data for bio
-            user_name = getattr(user, 'name', 'AI Promoter User')
+            # Render the system and user prompts using the template system
+            system_message = render_system_prompt(
+                content_item, 
+                user, 
+                platform, 
+                retry_attempt=attempts, 
+                last_length=last_length
+            )
             
-            # Get user bio and use default if None or empty/whitespace
-            user_bio = getattr(user, 'bio', '')
-            if not user_bio or not user_bio.strip():
-                user_bio = 'Security professional'
-            
-            # Format the user message with the specific content details
-            blog_author_param = getattr(content_item, 'author', '') if hasattr(content_item, 'author') else ''
-            user_message = user_message_template.format(
-                title=content_item.title,
-                description=description,
-                url=url_field,
-                timing=time_context,
-                name=user_name,
-                bio=user_bio,
-                blog_author=blog_author_param
+            user_message = render_user_prompt(
+                content_item,
+                user,
+                platform
             )
             
             # Log the complete prompt being sent to OpenAI

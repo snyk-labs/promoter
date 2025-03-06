@@ -12,7 +12,7 @@ logging.basicConfig(
 
 from extensions import db, login_manager
 from models import Episode, User, Post, Video
-from cli import sync_episodes, init_db, sync_blog, sync_youtube
+from cli import init_db, sync_podcast, sync_blog, sync_youtube
 from auth import bp as auth_bp
 from helpers.openai import (
     generate_social_post, validate_post_length, 
@@ -90,7 +90,7 @@ def create_app():
         app.logger.info("Okta SSO integration disabled")
 
     # Register CLI commands
-    app.cli.add_command(sync_episodes)
+    app.cli.add_command(sync_podcast)
     app.cli.add_command(init_db)
     app.cli.add_command(sync_blog)
     app.cli.add_command(sync_youtube)

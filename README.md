@@ -1,4 +1,4 @@
-# Promoter
+# AI Promoter
 
 A Flask web application designed to help automate social media promotion for your content. This tool automatically syncs with podcast, blog, and YouTube RSS feeds, providing an interface for company employees to easily share new content on social media.
 
@@ -82,7 +82,7 @@ openssl rand -hex 32
 
 ```bash
 # Database configuration (defaults to SQLite)
-export DATABASE_URL="sqlite:///promoter.db"  # Change if using PostgreSQL or other database
+export DATABASE_URL="sqlite:///ai-promoter.db"  # Change if using PostgreSQL or other database
 
 # Enable/disable Okta SSO (defaults to false)
 export OKTA_ENABLED="false"  # Set to "true" to enable Okta SSO
@@ -184,7 +184,7 @@ To automatically sync new episodes, you can set up a cron job (on Unix-based sys
 1. Create a shell script named `sync_episodes.sh`:
 ```bash
 #!/bin/bash
-cd /path/to/your/promoter
+cd /path/to/your/ai-promoter
 source venv/bin/activate
 export FLASK_APP=app.py
 flask sync-podcast "YOUR_PODCAST_RSS_URL"
@@ -204,7 +204,7 @@ chmod +x sync_episodes.sh
 
 1. Create a batch file named `sync_episodes.bat`:
 ```batch
-cd C:\path\to\your\promoter
+cd C:\path\to\your\ai-promoter
 call venv\Scripts\activate
 set FLASK_APP=app.py
 flask sync-podcast "YOUR_PODCAST_RSS_URL"
@@ -218,13 +218,13 @@ The application supports both SQLite (default for development) and PostgreSQL (r
 
 ### Database Configuration
 
-By default, SQLite is used in development mode with the database file stored at `promoter.db`. 
+By default, SQLite is used in development mode with the database file stored at `ai-promoter.db`. 
 
 You can customize the database configuration using the `DATABASE_URL` environment variable:
 
 ```bash
 # PostgreSQL configuration (recommended for production)
-export DATABASE_URL="postgresql://username:password@localhost:5432/promoter"
+export DATABASE_URL="postgresql://username:password@localhost:5432/ai_promoter"
 
 # Custom SQLite database path
 export DATABASE_URL="sqlite:///path/to/your/custom.db"
@@ -276,6 +276,30 @@ flask db history
 This section provides instructions for deploying the application to Heroku, a popular cloud platform.
 
 ### Deploying to Heroku
+
+#### One-Click Deployment
+
+The easiest way to deploy AI Promoter is with the Heroku Deploy button below. This will create your own instance of the application with all the necessary configuration:
+
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/snyk-labs/ai-promoter)
+
+**What this does:**
+1. Creates a new Heroku application with the required buildpacks
+2. Sets up a PostgreSQL database automatically
+3. Installs the Heroku Scheduler add-on
+4. Prompts you to enter your API keys and configuration
+5. Deploys the code and runs initial database setup
+
+**After deployment:**
+1. Configure scheduled jobs for content syncing:
+   - Open the Scheduler: `heroku addons:open scheduler -a your-app-name`
+   - Add jobs for podcasts, blogs, and YouTube as described in the [Scheduler section](#configuring-scheduled-tasks)
+2. Set up autonomous social posting if desired (see [Autonomous Posting section](#setting-up-autonomous-social-media-posting))
+3. Visit your new application: `heroku open -a your-app-name`
+
+#### Manual Deployment
+
+If you prefer to deploy manually or need more control over the deployment process, follow these steps:
 
 #### Prerequisites
 
@@ -454,7 +478,7 @@ This section provides instructions for deploying the application to Heroku, a po
     heroku addons:open scheduler
     ```
 
-    ### Configuring Scheduled Tasks
+    ### <a id="configuring-scheduled-tasks"></a>Configuring Scheduled Tasks
 
     In the Heroku Scheduler dashboard:
 
@@ -482,7 +506,7 @@ This section provides instructions for deploying the application to Heroku, a po
     FLASK_APP=app.py flask sync-youtube "https://www.youtube.com/feeds/videos.xml?channel_id=UCh4dJzctb0NhSibjU-e2P6w"
     ```
 
-    ### Setting Up Autonomous Social Media Posting
+    ### <a id="setting-up-autonomous-social-media-posting"></a>Setting Up Autonomous Social Media Posting
 
     To enable autonomous social media posting for newly discovered content, add this scheduled job:
 
@@ -537,7 +561,7 @@ This section provides instructions for deploying the application to Heroku, a po
 
 3. **Configure the application**
 
-   - Name: Enter a name for your application (e.g., "Promoter")
+   - Name: Enter a name for your application (e.g., "AI Promoter")
    - Logo (optional): Upload your application logo
    - Sign-in redirect URIs: `https://your-app-name.herokuapp.com/auth/okta/callback`
    - Sign-out redirect URIs: `https://your-app-name.herokuapp.com`

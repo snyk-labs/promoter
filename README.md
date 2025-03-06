@@ -327,7 +327,9 @@ This section provides instructions for deploying the application to Heroku, a po
    release: FLASK_APP=app.py flask db upgrade
    ```
 
-   This tells Heroku how to run your application and to run database migrations automatically on each deploy.
+   This tells Heroku how to run your application:
+   - `web`: Specifies the command to start your web server (using Gunicorn)
+   - `release`: Specifies commands that run automatically when a new version is deployed (running database migrations)
 
 6. **Add Gunicorn to requirements.txt**
 
@@ -353,27 +355,48 @@ This section provides instructions for deploying the application to Heroku, a po
    heroku run "FLASK_APP=app.py flask db upgrade"
    ```
 
-9. **Set up scheduled content syncing**
+9. **Ensure web dyno is running**
 
-   To schedule regular content updates, use the Heroku Scheduler add-on:
-
-   ```bash
-   heroku addons:create scheduler:standard
-   ```
-
-   Then open the scheduler dashboard:
+   After deploying, make sure your web dyno is running to serve the application:
 
    ```bash
-   heroku addons:open scheduler
+   # Check current dynos
+   heroku ps
+
+   # If no web dyno is running, start one
+   heroku ps:scale web=1
+
+   # To stop the web dyno (e.g., to avoid charges when not in use)
+   heroku ps:scale web=0
    ```
 
-   Add the following jobs:
+   You can also manage dynos through the Heroku Dashboard by:
+   - Going to your app's "Resources" tab
+   - Under "Dynos", clicking the edit (pencil) icon
+   - Moving the slider to enable/disable the web dyno
+   - Confirming the change
 
-   - For podcast syncing: `FLASK_APP=app.py flask sync-podcast "YOUR_PODCAST_RSS_URL"`
-   - For blog syncing: `FLASK_APP=app.py flask sync-blog "YOUR_BLOG_RSS_URL"`
-   - For YouTube syncing: `FLASK_APP=app.py flask sync-youtube "YOUR_YOUTUBE_CHANNEL_ID"`
+10. **Set up scheduled content syncing**
 
-10. **Open your application**
+    To schedule regular content updates, use the Heroku Scheduler add-on:
+
+    ```bash
+    heroku addons:create scheduler:standard
+    ```
+
+    Then open the scheduler dashboard:
+
+    ```bash
+    heroku addons:open scheduler
+    ```
+
+    Add the following jobs:
+
+    - For podcast syncing: `FLASK_APP=app.py flask sync-podcast "YOUR_PODCAST_RSS_URL"`
+    - For blog syncing: `FLASK_APP=app.py flask sync-blog "YOUR_BLOG_RSS_URL"`
+    - For YouTube syncing: `FLASK_APP=app.py flask sync-youtube "YOUR_YOUTUBE_CHANNEL_ID"`
+
+11. **Open your application**
 
     ```bash
     heroku open

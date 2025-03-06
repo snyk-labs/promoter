@@ -14,13 +14,13 @@ from helpers.okta import (
 )
 
 logger = logging.getLogger(__name__)
-bp = Blueprint('okta_auth', __name__)
+bp = Blueprint('okta_auth', __name__, url_prefix='/auth/okta')
 
 @bp.route('/login')
 def login():
     """Redirect to Okta for authentication."""
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
         
     # Check if Okta is enabled
     if not OKTA_ENABLED:
@@ -28,7 +28,7 @@ def login():
         return redirect(url_for('auth.login'))
     
     # Store original destination for after login
-    next_url = request.args.get('next', url_for('index'))
+    next_url = request.args.get('next', url_for('main.index'))
     
     # Generate a secure state parameter to prevent CSRF and nonce to prevent replay attacks
     state, nonce = generate_secure_state_and_nonce()
@@ -128,5 +128,5 @@ def callback():
         del session['okta_nonce']
     
     # Redirect to the originally requested page or default to home
-    next_url = session.pop('next_url', url_for('index'))
-    return redirect(next_url) 
+    next_url = session.pop('next_url', url_for('main.index'))
+    return redirect(next_url)

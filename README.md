@@ -12,6 +12,28 @@ A Flask web application designed to help automate social media promotion for you
 - Automatically generates social media posts, taking each person's specific context into account
 - Has a fully "autonomous" mode that allows for 100% automated social media promotion
 
+## Project Architecture
+
+This application follows the Model-View-Template (MVT) architecture pattern:
+
+- **Models**: Defined in `models.py`, representing the data structure
+- **Views**: Located in the `views/` package, containing:
+  - `main.py`: Main page routes
+  - `api.py`: API endpoints for promotion
+  - `auth.py`: Standard authentication routes
+  - `okta_auth.py`: Okta SSO authentication routes
+- **Templates**: Stored in the `templates/` directory
+
+The application is structured as follows:
+
+- `app.py`: Application factory and configuration
+- `extensions.py`: Flask extensions initialization
+- `models.py`: Database models
+- `cli/`: Command-line interface commands
+- `helpers/`: Utility functions and modules
+- `migrations/`: Database migration files
+- `views/`: View functions organized by feature
+
 ## Prerequisites
 
 - Python 3.12 or newer

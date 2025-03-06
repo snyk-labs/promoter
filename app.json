@@ -1,0 +1,65 @@
+{
+  "name": "AI Promoter",
+  "description": "A web application that automates social media promotion for your content by syncing with podcast, blog, and YouTube RSS feeds",
+  "repository": "https://github.com/snyk-labs/ai-promoter",
+  "logo": "https://avatars.githubusercontent.com/u/40261698?s=200&v=4",
+  "keywords": ["python", "flask", "content", "social-media", "automation", "rss", "podcast", "blog", "youtube"],
+  "success_url": "/",
+  "env": {
+    "SECRET_KEY": {
+      "description": "A secret key for secure session management",
+      "generator": "secret"
+    },
+    "OPENAI_API_KEY": {
+      "description": "Your OpenAI API key for generating social media content",
+      "required": true
+    },
+    "ARCADE_API_KEY": {
+      "description": "Your Arcade API key for social media posting",
+      "required": true
+    },
+    "OKTA_ENABLED": {
+      "description": "Enable Okta SSO integration (true/false)",
+      "value": "false",
+      "required": false
+    },
+    "OKTA_CLIENT_ID": {
+      "description": "Okta Application Client ID (if using Okta SSO)",
+      "required": false
+    },
+    "OKTA_CLIENT_SECRET": {
+      "description": "Okta Application Client Secret (if using Okta SSO)",
+      "required": false
+    },
+    "OKTA_ISSUER": {
+      "description": "Okta Issuer URL (if using Okta SSO)",
+      "required": false
+    },
+    "OKTA_REDIRECT_URI": {
+      "description": "Okta Redirect URI, should be https://your-app-name.herokuapp.com/auth/okta/callback",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0"
+    },
+    {
+      "plan": "scheduler:standard"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "FLASK_APP=app.py flask db upgrade && FLASK_APP=app.py flask init-db"
+  }
+} 

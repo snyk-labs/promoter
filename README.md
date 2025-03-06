@@ -8,7 +8,9 @@ A Flask web application designed to help automate social media promotion for you
 - Clean, modern web interface for viewing content
 - Items displayed with title, description, and publication date
 - Direct links to original content
-- Social media promotion capabilities (coming soon)
+- Integration with Okta for single sign-on, or normal email/password authentication
+- Automatically generates social media posts, taking each person's specific context into account
+- Has a fully "autonomous" mode that allows for 100% automated social media promotion
 
 ## Prerequisites
 
@@ -27,7 +29,7 @@ cd <repository-directory>
 2. Create a virtual environment:
 ```bash
 # On macOS/Linux
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate
 
 # On Windows
@@ -48,6 +50,61 @@ export FLASK_APP=app.py  # On Windows: set FLASK_APP=app.py
 # Then create the database tables
 flask init-db
 ```
+
+## Configuration
+
+Before running the application, you need to set up the following environment variables:
+
+### Required Environment Variables
+
+```bash
+# Flask secret key (for session security)
+export SECRET_KEY="your-secure-random-key"  # On Windows: set SECRET_KEY="your-secure-random-key"
+
+# OpenAI API key (required for generating social media content)
+export OPENAI_API_KEY="your-openai-api-key"  # On Windows: set OPENAI_API_KEY="your-openai-api-key"
+
+# Arcade API key (required for social media posting)
+export ARCADE_API_KEY="your-arcade-api-key"  # On Windows: set ARCADE_API_KEY="your-arcade-api-key"
+```
+
+You can generate a secure random key for SECRET_KEY using:
+
+```bash
+# On macOS/Linux
+openssl rand -hex 32
+
+# On Windows (in PowerShell)
+-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+```
+
+### Optional Environment Variables
+
+```bash
+# Database configuration (defaults to SQLite)
+export DATABASE_URL="sqlite:///promoter.db"  # Change if using PostgreSQL or other database
+
+# Enable/disable Okta SSO (defaults to false)
+export OKTA_ENABLED="false"  # Set to "true" to enable Okta SSO
+```
+
+### Setting Up Okta SSO (Optional)
+
+If you want to use Okta SSO for authentication, you'll need to set these additional variables:
+
+```bash
+# Okta application credentials
+export OKTA_CLIENT_ID="your-okta-client-id"
+export OKTA_CLIENT_SECRET="your-okta-client-secret"
+
+# Okta domain with authorization server path
+export OKTA_ISSUER="https://your-okta-domain.okta.com/oauth2/default"
+
+# Redirect URI (must match what you set in Okta)
+export OKTA_REDIRECT_URI="http://localhost:5000/auth/okta/callback"
+```
+
+See the [Okta SSO section](#setting-up-okta-sso-with-heroku) for details on setting up an Okta application.
 
 ## Usage
 

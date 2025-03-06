@@ -300,7 +300,7 @@ This section provides instructions for deploying the application to Heroku, a po
 3. **Add Heroku PostgreSQL add-on**
 
    ```bash
-   heroku addons:create heroku-postgresql:mini
+   heroku addons:create heroku-postgresql:essential-0
    ```
 
    This will provision a PostgreSQL database and set the `DATABASE_URL` environment variable automatically.

@@ -180,12 +180,9 @@
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <p class="text-sm text-yellow-700">
-                                        <a href="{{ url_for('auth.profile') }}" class="font-medium underline text-yellow-700 hover:text-yellow-600">
-                                            Adding information about yourself in your profile
-                                        </a>
-                                        will help generate better posts!
-                                    </p>
+                                    <ul id="warningsList" class="text-sm text-yellow-700">
+                                        <!-- Warning items will be inserted here dynamically -->
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -210,9 +207,14 @@
                                 <label for="postContent" class="text-sm font-medium text-gray-700">
                                     Generated Post (edit if needed)
                                 </label>
-                                <span class="text-sm text-gray-500">
-                                    <span id="charCount">0</span>/280
-                                </span>
+                                <div class="text-sm text-gray-500 flex gap-3">
+                                    <span id="twitterCount">
+                                        <span id="charCount">0</span>/280
+                                    </span>
+                                    <span id="linkedinCount">
+                                        <span id="charCountLinkedin">0</span>/3000
+                                    </span>
+                                </div>
                             </div>
                             <textarea id="postContent" rows="6"
                                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md mb-4"
@@ -272,14 +274,29 @@
     function updateCharCount() {
         const textarea = document.getElementById('postContent');
         const charCount = document.getElementById('charCount');
+        const charCountLinkedin = document.getElementById('charCountLinkedin');
         const count = textarea.value.length;
-        charCount.textContent = count;
         
-        // Visual feedback if over limit
+        // Update counts
+        charCount.textContent = count;
+        charCountLinkedin.textContent = count;
+        
+        // Visual feedback for Twitter limit
         if (count > 280) {
             charCount.classList.add('text-red-600', 'font-semibold');
+            document.getElementById('twitterCount').classList.add('text-red-600', 'font-semibold');
         } else {
             charCount.classList.remove('text-red-600', 'font-semibold');
+            document.getElementById('twitterCount').classList.remove('text-red-600', 'font-semibold');
+        }
+        
+        // Visual feedback for LinkedIn limit
+        if (count > 3000) {
+            charCountLinkedin.classList.add('text-red-600', 'font-semibold');
+            document.getElementById('linkedinCount').classList.add('text-red-600', 'font-semibold');
+        } else {
+            charCountLinkedin.classList.remove('text-red-600', 'font-semibold');
+            document.getElementById('linkedinCount').classList.remove('text-red-600', 'font-semibold');
         }
     }
     
@@ -350,6 +367,13 @@
                 
                 if (data.warnings) {
                     document.getElementById('warningMessage').classList.remove('hidden');
+                    const warningsList = document.getElementById('warningsList');
+                    warningsList.innerHTML = '';
+                    data.warnings.forEach(warning => {
+                        const li = document.createElement('li');
+                        li.textContent = warning;
+                        warningsList.appendChild(li);
+                    });
                 }
             } else {
                 document.getElementById('errorMessage').classList.remove('hidden');
@@ -382,6 +406,13 @@
                 
                 if (data.warnings) {
                     document.getElementById('warningMessage').classList.remove('hidden');
+                    const warningsList = document.getElementById('warningsList');
+                    warningsList.innerHTML = '';
+                    data.warnings.forEach(warning => {
+                        const li = document.createElement('li');
+                        li.textContent = warning;
+                        warningsList.appendChild(li);
+                    });
                 }
             } else {
                 document.getElementById('errorMessage').classList.remove('hidden');
@@ -414,6 +445,13 @@
                 
                 if (data.warnings) {
                     document.getElementById('warningMessage').classList.remove('hidden');
+                    const warningsList = document.getElementById('warningsList');
+                    warningsList.innerHTML = '';
+                    data.warnings.forEach(warning => {
+                        const li = document.createElement('li');
+                        li.textContent = warning;
+                        warningsList.appendChild(li);
+                    });
                 }
             } else {
                 document.getElementById('errorMessage').classList.remove('hidden');

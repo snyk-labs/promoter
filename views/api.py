@@ -30,6 +30,9 @@ def promote_podcast(episode_id):
         
         if not is_valid_for_twitter:
             warnings.append(f'Post exceeds Twitter character limit ({total_length}/{TWITTER_CHAR_LIMIT} characters)')
+            
+        if not is_valid_for_linkedin:
+            warnings.append(f'Post exceeds LinkedIn character limit ({total_length}/{LINKEDIN_CHAR_LIMIT} characters)')
         
         return jsonify({
             'success': True,
@@ -66,6 +69,9 @@ def promote_video(video_id):
         
         if not is_valid_for_twitter:
             warnings.append(f'Post exceeds Twitter character limit ({total_length}/{TWITTER_CHAR_LIMIT} characters)')
+            
+        if not is_valid_for_linkedin:
+            warnings.append(f'Post exceeds LinkedIn character limit ({total_length}/{LINKEDIN_CHAR_LIMIT} characters)')
         
         return jsonify({
             'success': True,
@@ -102,6 +108,9 @@ def promote_blog_post(post_id):
         
         if not is_valid_for_twitter:
             warnings.append(f'Post exceeds Twitter character limit ({total_length}/{TWITTER_CHAR_LIMIT} characters)')
+            
+        if not is_valid_for_linkedin:
+            warnings.append(f'Post exceeds LinkedIn character limit ({total_length}/{LINKEDIN_CHAR_LIMIT} characters)')
         
         return jsonify({
             'success': True,

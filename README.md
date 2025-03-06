@@ -305,7 +305,19 @@ This section provides instructions for deploying the application to Heroku, a po
 
    This will provision a PostgreSQL database and set the `DATABASE_URL` environment variable automatically.
 
-4. **Set required environment variables**
+4. **Specify Python version**
+
+   Create a file named `runtime.txt` in the root directory with the following content:
+
+   ```
+   python-3.11.9
+   ```
+
+   This ensures Heroku uses Python 3.11.9 instead of the latest version (3.13+), which may have compatibility issues with SQLAlchemy and Flask-Migrate.
+
+   > **Note:** If you encounter typing-related errors like `AssertionError: Class directly inherits TypingOnly but has additional attributes`, it's a sign of Python version incompatibility. Make sure you're using the `runtime.txt` file to specify a compatible Python version.
+
+5. **Set required environment variables**
 
    ```bash
    # Set a secure random secret key
@@ -318,7 +330,7 @@ This section provides instructions for deploying the application to Heroku, a po
    heroku config:set ARCADE_API_KEY=your-arcade-api-key
    ```
 
-5. **Create a Procfile**
+6. **Create a Procfile**
 
    Create a file named `Procfile` (no extension) in the root directory with the following content:
 
@@ -331,7 +343,7 @@ This section provides instructions for deploying the application to Heroku, a po
    - `web`: Specifies the command to start your web server (using Gunicorn)
    - `release`: Specifies commands that run automatically when a new version is deployed (running database migrations)
 
-6. **Add Gunicorn to requirements.txt**
+7. **Add Gunicorn to requirements.txt**
 
    Ensure `gunicorn` is in your requirements.txt file:
 
@@ -339,7 +351,7 @@ This section provides instructions for deploying the application to Heroku, a po
    gunicorn>=21.2.0
    ```
 
-7. **Deploy to Heroku**
+8. **Deploy to Heroku**
 
    ```bash
    git add .
@@ -347,36 +359,87 @@ This section provides instructions for deploying the application to Heroku, a po
    git push heroku main
    ```
 
-8. **Initialize the database (first deployment only)**
+9. **Bootstrap the database on Heroku**
 
-   After the first deployment, you may need to initialize the database manually:
+   After the first deployment, you need to set up and initialize the database:
 
    ```bash
+   # Run migrations to create all database tables
    heroku run "FLASK_APP=app.py flask db upgrade"
+   
+   # Initialize the database with required tables and initial data
+   heroku run "FLASK_APP=app.py flask init-db"
    ```
 
-9. **Ensure web dyno is running**
+   **Troubleshooting SQLAlchemy/typing errors:**
 
-   After deploying, make sure your web dyno is running to serve the application:
+   If you encounter errors like this when running database commands:
+   ```
+   AssertionError: Class directly inherits TypingOnly but has additional attributes {'__firstlineno__', '__static_attributes__'}
+   ```
+
+   This is typically caused by Python version incompatibility. To fix it:
+
+   1. Create or update the `runtime.txt` file with a compatible Python version:
+      ```
+      python-3.11.9
+      ```
+
+   2. Deploy the changes:
+      ```bash
+      git add runtime.txt
+      git commit -m "Specify Python 3.11.9 for compatibility"
+      git push heroku main
+      ```
+
+   3. After deployment completes, try the database commands again.
+
+   **Other database troubleshooting commands:**
 
    ```bash
-   # Check current dynos
-   heroku ps
-
-   # If no web dyno is running, start one
-   heroku ps:scale web=1
-
-   # To stop the web dyno (e.g., to avoid charges when not in use)
-   heroku ps:scale web=0
+   # Check database connection info
+   heroku pg:info
+   
+   # View database credentials
+   heroku pg:credentials:url
+   
+   # Connect to the database directly for troubleshooting
+   heroku pg:psql
    ```
 
-   You can also manage dynos through the Heroku Dashboard by:
-   - Going to your app's "Resources" tab
-   - Under "Dynos", clicking the edit (pencil) icon
-   - Moving the slider to enable/disable the web dyno
-   - Confirming the change
+   For a fresh start, you can reset the database (⚠️ caution - this deletes all data):
 
-10. **Set up scheduled content syncing**
+   ```bash
+   # Reset the database (removes all data)
+   heroku pg:reset DATABASE --confirm your-app-name
+   
+   # Then run migrations and initialization again
+   heroku run "FLASK_APP=app.py flask db upgrade"
+   heroku run "FLASK_APP=app.py flask init-db"
+   ```
+
+10. **Ensure web dyno is running**
+
+    After deploying, make sure your web dyno is running to serve the application:
+
+    ```bash
+    # Check current dynos
+    heroku ps
+
+    # If no web dyno is running, start one
+    heroku ps:scale web=1
+
+    # To stop the web dyno (e.g., to avoid charges when not in use)
+    heroku ps:scale web=0
+    ```
+
+    You can also manage dynos through the Heroku Dashboard by:
+    - Going to your app's "Resources" tab
+    - Under "Dynos", clicking the edit (pencil) icon
+    - Moving the slider to enable/disable the web dyno
+    - Confirming the change
+
+11. **Set up scheduled content syncing**
 
     To schedule regular content updates, use the Heroku Scheduler add-on:
 
@@ -396,7 +459,7 @@ This section provides instructions for deploying the application to Heroku, a po
     - For blog syncing: `FLASK_APP=app.py flask sync-blog "YOUR_BLOG_RSS_URL"`
     - For YouTube syncing: `FLASK_APP=app.py flask sync-youtube "YOUR_YOUTUBE_CHANNEL_ID"`
 
-11. **Open your application**
+12. **Open your application**
 
     ```bash
     heroku open

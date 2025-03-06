@@ -154,7 +154,7 @@ export FLASK_APP=app.py  # On Windows: set FLASK_APP=app.py
 flask sync-blog "YOUR_BLOG_RSS_URL"
 
 # For example, for the Snyk blog:
-flask sync-blog "https://snyk.io/blog/feed.xml"
+flask sync-blog "https://snyk.io/blog/feed/"
 ```
 
 #### Syncing YouTube Videos

@@ -5,12 +5,12 @@ import logging
 
 from extensions import db
 from models import User
-from arcade_helper import (
+from helpers.arcade import (
     start_linkedin_auth, start_x_auth,
     check_auth_status, post_to_linkedin, post_to_x,
     LINKEDIN_TOOL, X_TOOL
 )
-from openai_helper import validate_post_length, SocialPlatform
+from helpers.openai import validate_post_length, SocialPlatform
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -117,7 +117,14 @@ def profile():
         # Update user information
         current_user.name = name
         current_user.email = email
-        current_user.bio = bio
+        
+        # Handle bio - strip whitespace and set to None if empty
+        if bio:
+            bio = bio.strip()
+            current_user.bio = bio if bio else None
+        else:
+            current_user.bio = None
+            
         current_user.autonomous_mode = autonomous_mode
         
         # Handle password change if requested and not using SSO

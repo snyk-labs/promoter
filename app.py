@@ -2,16 +2,23 @@ from flask import Flask, render_template, jsonify
 import os
 from flask_login import login_required, current_user
 from flask_migrate import Migrate
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 from extensions import db, login_manager
 from models import Episode, User, Post, Video
 from cli import sync_episodes, init_db, sync_blog, sync_youtube
 from auth import bp as auth_bp
-from openai_helper import (
+from helpers.openai import (
     generate_social_post, validate_post_length, 
     TWITTER_CHAR_LIMIT, LINKEDIN_CHAR_LIMIT, SocialPlatform
 )
-from okta_config import OKTA_ENABLED, validate_okta_config
+from helpers.okta import OKTA_ENABLED, validate_okta_config
 from okta_auth import bp as okta_auth_bp
 
 def create_app():
@@ -124,9 +131,10 @@ def create_app():
         
         return render_template('index.html', content_items=content_items)
 
-    @app.route('/api/promote/<int:episode_id>', methods=['POST'])
+    @app.route('/api/promote/podcast/<int:episode_id>', methods=['POST'])
     @login_required
-    def promote_episode(episode_id):
+    def promote_podcast(episode_id):
+        """Standardized endpoint for podcast promotion"""
         episode = Episode.query.get_or_404(episode_id)
         
         try:
@@ -138,7 +146,7 @@ def create_app():
             
             # Prepare warnings if needed
             warnings = []
-            if not current_user.bio:
+            if not current_user.bio or not current_user.bio.strip():
                 warnings.append('Adding information about yourself in your profile will help generate better posts!')
             
             if not is_valid_for_twitter:
@@ -172,7 +180,7 @@ def create_app():
             
             # Prepare warnings if needed
             warnings = []
-            if not current_user.bio:
+            if not current_user.bio or not current_user.bio.strip():
                 warnings.append('Adding information about yourself in your profile will help generate better posts!')
             
             if not is_valid_for_twitter:
@@ -206,7 +214,7 @@ def create_app():
             
             # Prepare warnings if needed
             warnings = []
-            if not current_user.bio:
+            if not current_user.bio or not current_user.bio.strip():
                 warnings.append('Adding information about yourself in your profile will help generate better posts!')
             
             if not is_valid_for_twitter:

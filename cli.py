@@ -9,8 +9,9 @@ import urllib.parse
 
 from extensions import db
 from models import Episode, User, Post, Video
-from openai_helper import generate_platform_specific_posts
-from arcade_helper import post_to_linkedin, post_to_x
+from helpers.openai import generate_platform_specific_posts
+from helpers.arcade import post_to_linkedin, post_to_x
+from helpers.utils import clean_html, parse_date, normalize_url, extract_youtube_id, truncate_text
 
 @click.command('init-db')
 @with_appcontext

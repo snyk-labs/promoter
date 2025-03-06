@@ -333,7 +333,7 @@
     
     function generatePost(episodeId) {
         // Make API request
-        fetch(`/api/promote/${episodeId}`, {
+        fetch(`/api/promote/podcast/${episodeId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -348,7 +348,7 @@
                 document.getElementById('postContent').value = data.post;
                 updateCharCount(); // Update character count for new post
                 
-                if (data.warning) {
+                if (data.warnings) {
                     document.getElementById('warningMessage').classList.remove('hidden');
                 }
             } else {
@@ -380,7 +380,7 @@
                 document.getElementById('postContent').value = data.post;
                 updateCharCount(); // Update character count for new post
                 
-                if (data.warning) {
+                if (data.warnings) {
                     document.getElementById('warningMessage').classList.remove('hidden');
                 }
             } else {
@@ -412,7 +412,7 @@
                 document.getElementById('postContent').value = data.post;
                 updateCharCount(); // Update character count for new post
                 
-                if (data.warning) {
+                if (data.warnings) {
                     document.getElementById('warningMessage').classList.remove('hidden');
                 }
             } else {

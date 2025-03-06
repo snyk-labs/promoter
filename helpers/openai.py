@@ -1,3 +1,9 @@
+"""
+OpenAI Helper Module
+
+This module provides functions for generating social media content using OpenAI.
+"""
+
 import os
 from openai import OpenAI
 from contextlib import contextmanager
@@ -6,7 +12,11 @@ import logging
 from enum import Enum, auto
 
 # Initialize the client once
-client = OpenAI()
+# client = OpenAI()  # This will fail if OPENAI_API_KEY is not set
+# Instead, create a function to get the client when needed
+def get_openai_client():
+    """Get the OpenAI client, initializing it if necessary."""
+    return OpenAI()
 
 # Define character limits for different platforms
 TWITTER_CHAR_LIMIT = 280
@@ -25,8 +35,7 @@ class ContentType(Enum):
     VIDEO = auto()
     BLOG = auto()
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logger
 logger = logging.getLogger(__name__)
 
 def get_platform_config(platform):
@@ -83,6 +92,9 @@ def generate_social_post(content_item, user, platform=SocialPlatform.GENERIC, ma
     Raises:
         Exception: If post generation fails after max_retries
     """
+    
+    # Get the OpenAI client
+    client = get_openai_client()
     
     # Get platform-specific configuration
     platform_config = get_platform_config(platform)
@@ -194,7 +206,7 @@ Content Details:
 - Timing: {{timing}}
 
 Person authoring this social post: {{name}}
-Background: {{bio}}
+Background of the person authoring this social post: {{bio}}
 
 Key Requirements:
 1. STRICT LIMIT: Your text must be {platform_config['content_limit']} characters or less to leave room for the URL
@@ -225,10 +237,17 @@ Key Requirements:
             user_message_template += """
 8. DO NOT refer to or mention any blog author since that information is not available"""
 
-    user_message_template += f"""
+    # Add platform-specific guidance only when generating for specific platforms
+    if platform == SocialPlatform.LINKEDIN:
+        user_message_template += """
 
-For LinkedIn: If generating LinkedIn content, you can include more detail and professional insights.
-For Twitter: If generating Twitter content, be extremely concise and engaging.
+For LinkedIn: You can include more detail and professional insights. Focus on providing value to a professional audience."""
+    elif platform == SocialPlatform.TWITTER:
+        user_message_template += """
+
+For Twitter: Be extremely concise and engaging. Make every character count."""
+    
+    user_message_template += f"""
 
 Remember: The URL counts toward the {platform_config['char_limit']} character limit! Keep your content appropriate for the platform."""
     
@@ -248,44 +267,63 @@ The total MUST be less than {platform_config['char_limit']} characters. Be extre
             # For videos and blog posts that have excerpts, use that instead when available
             if content_type in [ContentType.VIDEO, ContentType.BLOG] and hasattr(content_item, 'excerpt') and content_item.excerpt:
                 description = content_item.excerpt
+                
+            # If description is too long, truncate it
+            if len(description) > 400:
+                description = description[:397] + "..."
+                
+            # Prepare user data for bio
+            user_name = getattr(user, 'name', 'AI Promoter User')
             
-            # Create formatting parameters
-            format_params = {
-                'title': content_item.title,
-                'description': description,
-                'url': url_field,
-                'timing': time_context,
-                'name': user.name,
-                'bio': user.bio or 'No background information provided'
-            }
+            # Get user bio and use default if None or empty/whitespace
+            user_bio = getattr(user, 'bio', '')
+            if not user_bio or not user_bio.strip():
+                user_bio = 'Security professional'
             
-            # Add blog author if available (for blog posts only)
-            if content_type == ContentType.BLOG and hasattr(content_item, 'author') and content_item.author:
-                format_params['blog_author'] = content_item.author
+            # Format the user message with the specific content details
+            blog_author_param = getattr(content_item, 'author', '') if hasattr(content_item, 'author') else ''
+            user_message = user_message_template.format(
+                title=content_item.title,
+                description=description,
+                url=url_field,
+                timing=time_context,
+                name=user_name,
+                bio=user_bio,
+                blog_author=blog_author_param
+            )
             
-            user_message = user_message_template.format(**format_params)
+            # Log the complete prompt being sent to OpenAI
+            logger.info(f"OpenAI Prompt - Content ID: {getattr(content_item, 'id', 'unknown')}, Type: {content_type}")
+            logger.info(f"System Message:\n{system_message}")
+            logger.info(f"User Message:\n{user_message}")
             
-            completion = client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+            # Query OpenAI to generate the social post
+            response = client.chat.completions.create(
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_message}
-                ]
+                ],
+                temperature=0.7,
+                max_tokens=300,
+                top_p=1.0,
+                frequency_penalty=0.1,
+                presence_penalty=0.0,
             )
             
-            # Get the generated content
-            post = completion.choices[0].message.content.strip()
+            # Extract the generated text
+            post = response.choices[0].message.content.strip()
             
-            # Validate the post length is within platform's character limit
-            # First, check if the URL is already in the post
-            if url_field in post:
-                total_length = len(post)
-            else:
-                # If not, we'll need to add it
-                total_length = len(post) + len(url_field) + 1  # +1 for a space
+            # Log the response from OpenAI
+            logger.info(f"OpenAI Response - Content ID: {getattr(content_item, 'id', 'unknown')}")
+            logger.info(f"Generated Post:\n{post}")
             
-            # Log the post details
-            logger.info(f"Generated {platform_config['name']} post (attempt {attempts}): {total_length} characters")
+            # Check the length of the generated post
+            total_length = len(post)
+            
+            # Make sure URL is included
+            if url_field not in post:
+                total_length += len(url_field) + 1  # +1 for space
             
             # If within limits, return the post
             if total_length <= platform_config['char_limit']:

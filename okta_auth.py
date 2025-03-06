@@ -2,16 +2,15 @@ from flask import Blueprint, redirect, url_for, session, request, flash, current
 from flask_login import login_user, current_user
 import requests
 import json
-import secrets
-from jose import jwt
-from urllib.parse import urlencode
 import logging
 
 from models import User
 from extensions import db
-from okta_config import (
+from helpers.okta import (
     OKTA_CLIENT_ID, OKTA_CLIENT_SECRET, OKTA_ISSUER,
-    OKTA_REDIRECT_URI, OKTA_SCOPES, OKTA_ENABLED
+    OKTA_REDIRECT_URI, OKTA_SCOPES, OKTA_ENABLED,
+    build_authorization_url, exchange_code_for_tokens,
+    validate_id_token, get_user_profile, generate_secure_state_and_nonce
 )
 
 logger = logging.getLogger(__name__)
@@ -31,118 +30,103 @@ def login():
     # Store original destination for after login
     next_url = request.args.get('next', url_for('index'))
     
-    # Generate a secure state parameter to prevent CSRF
-    state = secrets.token_urlsafe(32)
+    # Generate a secure state parameter to prevent CSRF and nonce to prevent replay attacks
+    state, nonce = generate_secure_state_and_nonce()
     session['okta_state'] = state
     session['next_url'] = next_url
-    
-    # Generate a secure nonce to prevent replay attacks
-    nonce = secrets.token_urlsafe(32)
     session['okta_nonce'] = nonce
     
-    # Build the Okta authorization URL
-    auth_params = {
-        'client_id': OKTA_CLIENT_ID,
-        'response_type': 'code',
-        'scope': ' '.join(OKTA_SCOPES),
-        'redirect_uri': OKTA_REDIRECT_URI,
-        'state': state,
-        'nonce': nonce
-    }
-    
-    auth_url = f"{OKTA_ISSUER}/v1/authorize?{urlencode(auth_params)}"
-    logger.info(f"Redirecting to Okta for authentication: {auth_url}")
+    # Build and redirect to the Okta authorization URL
+    auth_url = build_authorization_url(state, nonce)
     return redirect(auth_url)
 
 @bp.route('/callback')
 def callback():
-    """Handle the Okta callback and authenticate the user."""
-    # Verify error response
+    """Handle the callback from Okta after authentication."""
+    # Check for error parameter
     if 'error' in request.args:
-        flash(f"Login error: {request.args.get('error_description', 'Unknown error')}", 'error')
+        error = request.args.get('error')
+        error_description = request.args.get('error_description', 'Unknown error')
+        logger.error(f"Okta authentication error: {error} - {error_description}")
+        flash(f"Authentication error: {error_description}", 'error')
         return redirect(url_for('auth.login'))
     
-    # Exchange the authorization code for tokens
-    code = request.args.get('code')
-    if not code:
-        flash('No authorization code received', 'error')
-        return redirect(url_for('auth.login'))
-    
-    # Verify the state parameter to prevent CSRF
+    # Verify state to prevent CSRF
     state = request.args.get('state')
     if state != session.get('okta_state'):
-        flash('Invalid state parameter', 'error')
-        logger.warning(f"State mismatch: received {state}, expected {session.get('okta_state')}")
+        logger.error("Invalid state parameter in Okta callback")
+        flash('Invalid state parameter, possible CSRF attack', 'error')
         return redirect(url_for('auth.login'))
     
-    # Get the next URL from the session
-    next_url = session.get('next_url', url_for('index'))
-    
-    # Prepare token exchange request
-    token_url = f"{OKTA_ISSUER}/v1/token"
-    token_payload = {
-        'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': OKTA_REDIRECT_URI,
-        'client_id': OKTA_CLIENT_ID,
-        'client_secret': OKTA_CLIENT_SECRET
-    }
-    
+    # Exchange code for tokens
+    code = request.args.get('code')
     try:
-        # Exchange code for tokens
-        token_response = requests.post(token_url, data=token_payload)
-        token_response.raise_for_status()
-        tokens = token_response.json()
-        
-        # Extract ID token to get user information
-        id_token = tokens['id_token']
-        id_token_claims = jwt.decode(
-            id_token,
-            '',  # Skip signature verification here for simplicity
-            options={"verify_signature": False}
-        )
-        
-        # Verify nonce to prevent replay attacks
-        received_nonce = id_token_claims.get('nonce')
-        if received_nonce != session.get('okta_nonce'):
-            flash('Invalid token nonce', 'error')
-            logger.warning(f"Nonce mismatch: received {received_nonce}, expected {session.get('okta_nonce')}")
-            return redirect(url_for('auth.login'))
-        
-        # Extract user info from the token
-        okta_id = id_token_claims['sub']
-        email = id_token_claims.get('email', '')
-        name = id_token_claims.get('name', email.split('@')[0] if email else 'Okta User')
-        
-        logger.info(f"User authenticated with Okta: {email} (ID: {okta_id})")
-        
-        # Find or create the user
-        user = User.find_or_create_okta_user(okta_id, email, name)
-        
-        # Log in the user
-        login_user(user)
-        flash('Successfully authenticated with Okta', 'success')
-        
-        # Clean up session
-        session.pop('okta_state', None)
-        session.pop('okta_nonce', None)
-        session.pop('next_url', None)
-        
-        # Store access token for potential API requests
-        session['access_token'] = tokens.get('access_token')
-        
-        # Redirect to the original destination
-        return redirect(next_url)
-        
-    except requests.exceptions.RequestException as e:
-        flash(f'Error communicating with Okta: {str(e)}', 'error')
-        logger.error(f"Okta token exchange error: {str(e)}")
-        return redirect(url_for('auth.login'))
-    except jwt.JWTError as e:
-        flash(f'Error processing Okta token: {str(e)}', 'error')
-        logger.error(f"JWT decoding error: {str(e)}")
-        return redirect(url_for('auth.login'))
+        tokens = exchange_code_for_tokens(code)
     except Exception as e:
-        flash(f'Unexpected error: {str(e)}', 'error')
-        logger.error(f"Unexpected error in Okta callback: {str(e)}", exc_info=True)
-        return redirect(url_for('auth.login')) 
+        logger.error(f"Error exchanging code for tokens: {str(e)}")
+        flash(f"Error during authentication: {str(e)}", 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Validate the ID token
+    id_token = tokens.get('id_token')
+    nonce = session.get('okta_nonce')
+    try:
+        claims = validate_id_token(id_token, nonce)
+    except Exception as e:
+        logger.error(f"Error validating ID token: {str(e)}")
+        flash(f"Error validating credentials: {str(e)}", 'error')
+        return redirect(url_for('auth.login'))
+    
+    # Get user info using the access token
+    access_token = tokens.get('access_token')
+    try:
+        user_info = get_user_profile(access_token)
+    except Exception as e:
+        logger.error(f"Error getting user profile: {str(e)}")
+        flash(f"Error retrieving user profile: {str(e)}", 'error')
+        return redirect(url_for('auth.login'))
+        
+    # Extract user details from ID token claims
+    email = claims.get('email', '')
+    first_name = claims.get('given_name', '')
+    last_name = claims.get('family_name', '')
+    # Combine first and last name
+    full_name = f"{first_name} {last_name}".strip()
+    if not full_name:
+        full_name = email.split('@')[0]  # Use part of email as fallback
+    okta_id = claims.get('sub', '')
+    
+    # Look up or create user in database
+    user = User.query.filter_by(email=email).first()
+    
+    if user:
+        # Update existing user details if needed
+        user.name = full_name
+        user.okta_id = okta_id
+    else:
+        # Create new user
+        user = User(
+            email=email,
+            name=full_name,
+            okta_id=okta_id,
+            auth_type='okta',
+            password_hash=None  # No password for SSO users
+        )
+        db.session.add(user)
+    
+    # Save the changes
+    db.session.commit()
+    
+    # Log the user in
+    login_user(user)
+    logger.info(f"User {email} logged in via Okta SSO")
+    
+    # Clean up session
+    if 'okta_state' in session:
+        del session['okta_state']
+    if 'okta_nonce' in session:
+        del session['okta_nonce']
+    
+    # Redirect to the originally requested page or default to home
+    next_url = session.pop('next_url', url_for('index'))
+    return redirect(next_url) 

@@ -16,7 +16,7 @@ A Flask web application designed to help automate social media promotion for you
 
 This application follows the Model-View-Template (MVT) architecture pattern:
 
-- **Models**: Defined in `models.py`, representing the data structure
+- **Models**: Defined in the `models` package, each in its own file, representing the data structure
 - **Views**: Located in the `views/` package, containing:
   - `main.py`: Main page routes
   - `api.py`: API endpoints for promotion
@@ -28,7 +28,12 @@ The application is structured as follows:
 
 - `app.py`: Application factory and configuration
 - `extensions.py`: Flask extensions initialization
-- `models.py`: Database models
+- `models/`: Database models organized by entity
+  - `__init__.py`: Imports and exports all models
+  - `user.py`: User model
+  - `episode.py`: Podcast episode model
+  - `post.py`: Blog post model
+  - `video.py`: YouTube video model
 - `cli/`: Command-line interface commands
 - `helpers/`: Utility functions and modules
 - `migrations/`: Database migration files
@@ -663,7 +668,7 @@ If you encounter issues with Okta SSO:
 ## Development
 
 - The main application logic is in `app.py`
-- Database models are defined in `models.py`
+- Database models are defined in the `models` package, with each model in its own file
 - CLI commands are in `cli.py`
 - HTML templates are in the `templates` directory
 

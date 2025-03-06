@@ -1,3 +1,7 @@
+"""
+User model for authentication and profile information.
+"""
+
 from datetime import datetime
 import bcrypt
 from flask_login import UserMixin
@@ -67,55 +71,4 @@ class User(UserMixin, db.Model):
         return user
     
     def __repr__(self):
-        return f'<User {self.email}>'
-
-class Episode(db.Model):
-    __tablename__ = 'episodes'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    episode_number = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    player_url = db.Column(db.String(500), nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)  # New field for episode image
-    publish_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<Episode {self.episode_number}: {self.title}>'
-
-class Post(db.Model):
-    __tablename__ = 'posts'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    excerpt = db.Column(db.Text, nullable=True)
-    url = db.Column(db.String(500), nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)  # New field for blog image
-    author = db.Column(db.String(100), nullable=True)
-    publish_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    source = db.Column(db.String(100), nullable=True)  # To track the blog source
-    
-    def __repr__(self):
-        return f'<Post {self.id}: {self.title}>'
-
-class Video(db.Model):
-    __tablename__ = 'videos'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    video_id = db.Column(db.String(20), nullable=False, unique=True)  # YouTube video ID
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)  # Full description
-    excerpt = db.Column(db.Text, nullable=True)  # Shorter description for display
-    thumbnail_url = db.Column(db.String(500), nullable=True)
-    url = db.Column(db.String(500), nullable=False)  # YouTube video URL
-    channel_name = db.Column(db.String(100), nullable=True)
-    channel_id = db.Column(db.String(50), nullable=True)
-    publish_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    duration = db.Column(db.String(20), nullable=True)  # Duration in ISO 8601 format
-    
-    def __repr__(self):
-        return f'<Video {self.video_id}: {self.title}>' 
+        return f'<User {self.email}>' 

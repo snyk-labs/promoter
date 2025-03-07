@@ -176,12 +176,11 @@
                             <div class="flex">
                                 <div class="flex-shrink-0">
                                     <svg class="h-5 w-5 text-yellow-400 dark:text-yellow-300" viewBox="0 0 20 20" fill="currentColor">
-                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <ul id="warningsList" class="text-sm text-yellow-700">
+                                    <ul id="warningsList" class="text-sm text-yellow-700 dark:text-yellow-200">
                                         <!-- Warning items will be inserted here dynamically -->
                                     </ul>
                                 </div>
@@ -189,15 +188,15 @@
                         </div>
                         
                         <!-- Error Message -->
-                        <div id="errorMessage" class="hidden mb-4 bg-red-50 border-l-4 border-red-400 p-4">
+                        <div id="errorMessage" class="hidden mb-4 bg-red-50 dark:bg-red-900 border-l-4 border-red-400 dark:border-red-600 p-4">
                             <div class="flex">
                                 <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg class="h-5 w-5 text-red-400 dark:text-red-300" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <p class="text-sm text-red-700" id="errorText"></p>
+                                    <p class="text-sm text-red-700 dark:text-red-200" id="errorText"></p>
                                 </div>
                             </div>
                         </div>
@@ -205,10 +204,10 @@
                         <!-- Generated Post -->
                         <div id="generatedPost" class="hidden">
                             <div class="flex justify-between items-center mb-2">
-                                <label for="postContent" class="text-sm font-medium text-gray-700">
+                                <label for="postContent" class="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Generated Post (edit if needed)
                                 </label>
-                                <div class="text-sm text-gray-500 flex gap-3">
+                                <div class="text-sm text-gray-500 dark:text-gray-400 flex gap-3">
                                     <span id="twitterCount">
                                         <span id="charCount">0</span>/280
                                     </span>
@@ -218,11 +217,11 @@
                                 </div>
                             </div>
                             <textarea id="postContent" rows="6"
-                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md mb-4"
+                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md mb-4"
                                 oninput="updateCharCount()"></textarea>
                             <div class="flex space-x-4">
                                 <button onclick="regeneratePost()" type="button"
-                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                     Regenerate
                                 </button>
                                 <button onclick="copyToClipboard(event)" type="button"
@@ -231,12 +230,12 @@
                                 </button>
                                 {% if current_user.x_authorized %}
                                 <button onclick="postToX(event)" type="button"
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800">
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700">
                                     Post to X
                                 </button>
                                 {% else %}
                                 <a href="{{ url_for('auth.x_connect') }}"
-                                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800">
+                                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700">
                                     Post to X
                                 </a>
                                 {% endif %}
@@ -256,9 +255,9 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button type="button" onclick="closePromoteModal()"
-                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Close
                 </button>
             </div>

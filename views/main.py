@@ -9,6 +9,7 @@ bp = Blueprint('main', __name__)
 def index():
     """Main index page that shows all content sorted by publish date."""
     # Get all episodes, posts, and videos ordered by publish date (most recent first)
+    # Limit to 100 items total for the initial load
     episodes = Episode.query.order_by(Episode.publish_date.desc()).all()
     posts = Post.query.order_by(Post.publish_date.desc()).all()
     videos = Video.query.order_by(Video.publish_date.desc()).all()
@@ -40,4 +41,7 @@ def index():
     # Sort all content by publish date (most recent first)
     content_items.sort(key=lambda x: x['item'].publish_date, reverse=True)
     
-    return render_template('index.html', content_items=content_items)
+    # Get total count of items to determine if there are more than 100
+    total_count = len(content_items)
+    
+    return render_template('index.html', content_items=content_items, total_count=total_count)

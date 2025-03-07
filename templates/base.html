@@ -1,25 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Promoter - Content Promotion Manager</title>
+    <title>ai-promoter - Content Promotion Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .dark {
+                --tw-bg-opacity: 1;
+                background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+                color: rgb(229 231 235);
+            }
+            .dark .dark\:bg-gray-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+            }
+            .dark .dark\:bg-gray-800 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(31 41 55 / var(--tw-bg-opacity));
+            }
+            .dark .dark\:text-white {
+                --tw-text-opacity: 1;
+                color: rgb(255 255 255 / var(--tw-text-opacity));
+            }
+            .dark .dark\:text-gray-300 {
+                --tw-text-opacity: 1;
+                color: rgb(209 213 219 / var(--tw-text-opacity));
+            }
+            .dark .dark\:border-gray-700 {
+                --tw-border-opacity: 1;
+                border-color: rgb(55 65 81 / var(--tw-border-opacity));
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-white shadow">
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
+    <nav class="bg-white dark:bg-gray-800 shadow">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-indigo-600">Promoter</a>
+                        <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">ai-promoter</a>
                     </div>
                 </div>
                 <div class="flex items-center">
+                    <!-- Dark mode toggle -->
+                    <button id="darkModeToggle" class="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200">
+                        <!-- Sun icon (for dark mode) -->
+                        <svg id="sunIcon" class="hidden h-6 w-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <!-- Moon icon (for light mode) -->
+                        <svg id="moonIcon" class="h-6 w-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                    </button>
+
                     {% if current_user.is_authenticated %}
-                        <span class="text-gray-700 mr-4">Welcome, {{ current_user.name }}</span>
+                        <span class="text-gray-700 dark:text-gray-300 mr-4">Welcome, {{ current_user.name }}</span>
                         <a href="{{ url_for('auth.profile') }}" 
-                           class="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-900">
+                           class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                             Profile
                         </a>
                         <a href="{{ url_for('auth.logout') }}" 
@@ -28,7 +77,7 @@
                         </a>
                     {% else %}
                         <a href="{{ url_for('auth.login') }}" 
-                           class="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-900">
+                           class="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                             Login
                         </a>
                         <a href="{{ url_for('auth.register') }}" 
@@ -45,7 +94,7 @@
         {% if messages %}
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                 {% for category, message in messages %}
-                    <div class="rounded-md p-4 mb-4 {% if category == 'error' %}bg-red-50 text-red-700{% else %}bg-green-50 text-green-700{% endif %}">
+                    <div class="rounded-md p-4 mb-4 {% if category == 'error' %}bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-200{% else %}bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-200{% endif %}">
                         <p class="text-sm font-medium">{{ message }}</p>
                     </div>
                 {% endfor %}
@@ -53,6 +102,49 @@
         {% endif %}
     {% endwith %}
 
-    {% block content %}{% endblock %}
+    <div class="transition-colors duration-200">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        // Dark mode toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            const html = document.documentElement;
+            
+            // Check for saved preference
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            
+            // Apply saved preference
+            if (darkMode) {
+                enableDarkMode();
+            }
+            
+            // Toggle between modes
+            darkModeToggle.addEventListener('click', function() {
+                if (html.classList.contains('dark')) {
+                    disableDarkMode();
+                } else {
+                    enableDarkMode();
+                }
+            });
+            
+            function enableDarkMode() {
+                html.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                localStorage.setItem('darkMode', 'true');
+            }
+            
+            function disableDarkMode() {
+                html.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('darkMode', 'false');
+            }
+        });
+    </script>
 </body>
 </html> 

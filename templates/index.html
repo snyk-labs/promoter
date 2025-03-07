@@ -4,32 +4,32 @@
 <div class="container mx-auto px-4 py-8">
     <div class="space-y-6">
         {% for item in content_items %}
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div class="flex justify-between items-start">
                 <div class="flex-grow">
                     <div class="flex items-center mb-2">
                         {% if item.content_type == 'podcast' %}
                         <!-- Podcast Icon -->
-                        <svg class="h-6 w-6 text-indigo-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="h-6 w-6 text-indigo-600 dark:text-indigo-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
                         </svg>
-                        <h2 class="text-2xl font-semibold text-gray-900">
+                        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                             Episode {{ item.item.episode_number }}: {{ item.item.title }}
                         </h2>
                         {% elif item.content_type == 'video' %}
                         <!-- Video Icon -->
-                        <svg class="h-6 w-6 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="h-6 w-6 text-red-600 dark:text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12.553 1.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
                         </svg>
-                        <h2 class="text-2xl font-semibold text-gray-900">
+                        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                             {{ item.item.title }}
                         </h2>
                         {% else %}
                         <!-- Blog Post Icon -->
-                        <svg class="h-6 w-6 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="h-6 w-6 text-green-600 dark:text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
                         </svg>
-                        <h2 class="text-2xl font-semibold text-gray-900">
+                        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                             {{ item.item.title }}
                         </h2>
                         {% endif %}
@@ -41,12 +41,12 @@
                         {% if item.item.image_url %}
                         <div class="w-full md:w-1/3">
                             <a href="{{ item.item.player_url }}" target="_blank">
-                                <img src="{{ item.item.image_url }}" alt="{{ item.item.title }}" class="w-full h-56 object-contain bg-gray-100 rounded-lg shadow">
+                                <img src="{{ item.item.image_url }}" alt="{{ item.item.title }}" class="w-full h-56 object-contain bg-gray-100 dark:bg-gray-700 rounded-lg shadow">
                             </a>
                         </div>
                         {% endif %}
                         <div class="w-full {% if item.item.image_url %}md:w-2/3{% endif %}">
-                            <p class="text-gray-600 mb-4">
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
                                 {% if item.item.description and item.item.description|length > 250 %}
                                     {{ item.item.description[:250] }}...
                                 {% else %}
@@ -61,7 +61,7 @@
                                 </a>
                                 {% if current_user.is_authenticated %}
                                 <button onclick="showPromoteModal({{ item.item.id }})"
-                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200">
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900 hover:bg-indigo-200 dark:hover:bg-indigo-800">
                                     Promote Episode
                                 </button>
                                 {% endif %}
@@ -74,12 +74,12 @@
                         {% if item.item.thumbnail_url %}
                         <div class="w-full md:w-1/3">
                             <a href="{{ item.item.url }}" target="_blank">
-                                <img src="{{ item.item.thumbnail_url }}" alt="{{ item.item.title }}" class="w-full h-56 object-contain bg-gray-100 rounded-lg shadow">
+                                <img src="{{ item.item.thumbnail_url }}" alt="{{ item.item.title }}" class="w-full h-56 object-contain bg-gray-100 dark:bg-gray-700 rounded-lg shadow">
                             </a>
                         </div>
                         {% endif %}
                         <div class="w-full {% if item.item.thumbnail_url %}md:w-2/3{% endif %}">
-                            <p class="text-gray-600 mb-4">
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
                                 {% if item.item.excerpt %}
                                     {{ item.item.excerpt }}
                                 {% else %}
@@ -99,7 +99,7 @@
                                 <!-- TODO: Add promote button for videos once the API endpoint is created -->
                                 {% if current_user.is_authenticated %}
                                 <button onclick="showPromoteVideoModal({{ item.item.id }})"
-                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200">
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800">
                                     Promote Video
                                 </button>
                                 {% endif %}
@@ -112,12 +112,12 @@
                         {% if item.item.image_url %}
                         <div class="w-full md:w-1/3">
                             <a href="{{ item.item.url }}" target="_blank">
-                                <img src="{{ item.item.image_url }}" alt="{{ item.item.title }}" class="w-full h-56 object-contain bg-gray-100 rounded-lg shadow">
+                                <img src="{{ item.item.image_url }}" alt="{{ item.item.title }}" class="w-full h-56 object-contain bg-gray-100 dark:bg-gray-700 rounded-lg shadow">
                             </a>
                         </div>
                         {% endif %}
                         <div class="w-full {% if item.item.image_url %}md:w-2/3{% endif %}">
-                            <p class="text-gray-600 mb-4">{{ item.item.excerpt }}</p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">{{ item.item.excerpt }}</p>
                             <div class="flex space-x-4">
                                 <a href="{{ item.item.url }}" 
                                    target="_blank"
@@ -125,12 +125,12 @@
                                     Read Full Article
                                 </a>
                                 {% if item.item.author %}
-                                <span class="text-sm text-gray-600 self-center">By {{ item.item.author }}</span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400 self-center">By {{ item.item.author }}</span>
                                 {% endif %}
                                 <!-- TODO: Add promote button for blog posts once the API endpoint is created -->
                                 {% if current_user.is_authenticated %}
                                 <button onclick="showPromoteBlogModal({{ item.item.id }})"
-                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200">
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800">
                                     Promote Blog Post
                                 </button>
                                 {% endif %}
@@ -139,42 +139,43 @@
                     </div>
                     {% endif %}
                 </div>
-                <div class="text-sm text-gray-500 ml-4 whitespace-nowrap">
+                <div class="text-sm text-gray-500 dark:text-gray-400 ml-4 whitespace-nowrap">
                     {{ item.item.publish_date.strftime('%B %d, %Y') }}
                 </div>
             </div>
         </div>
         {% else %}
         <div class="text-center py-12">
-            <p class="text-gray-600">No content available yet.</p>
+            <p class="text-gray-600 dark:text-gray-400">No content available yet.</p>
         </div>
         {% endfor %}
     </div>
 </div>
 
 <!-- Promotion Modal -->
-<div id="promoteModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 overflow-y-auto">
+<div id="promoteModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modalTitle">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4" id="modalTitle">
                             Generate Social Media Post
                         </h3>
                         
                         <!-- Loading State -->
                         <div id="loadingState" class="hidden">
                             <div class="flex items-center justify-center py-8">
-                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                                <span class="ml-2">Generating your post...</span>
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+                                <span class="ml-2 dark:text-gray-300">Generating your post...</span>
                             </div>
                         </div>
                         
                         <!-- Warning Message -->
-                        <div id="warningMessage" class="hidden mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <div id="warningMessage" class="hidden mb-4 bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-400 dark:border-yellow-600 p-4">
                             <div class="flex">
                                 <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-yellow-400 dark:text-yellow-300" viewBox="0 0 20 20" fill="currentColor">
                                     <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                     </svg>
